@@ -20,19 +20,19 @@ infixr 3 ◇_
 -- Axioms.
 
 -- K (distribution).
-K : ∀ {A B} → □(A → B) → (□ A → □ B)
-K _ = λ z → □-ax □_.p _ (□_.p z)
+K : ∀ {l} {A B : Set l} → □(A → B) → (□ A → □ B)
+K (□-ax p) (□-ax p₁) = □-ax (p p₁)
 
 -- T (also called M).
-T : ∀ {A} → □ A → A
+T : ∀ {l} {A : Set l} → □ A → A
 T (□-ax p) = p
 
 -- 4
-A4 : ∀ {A} → □ A → □ □ A
+A4 : ∀ {l} {A : Set l} → □ A → □ □ A
 A4 p = □-ax p
 
 -- 5
-A5 : ∀ {A} → ◇ A → □ ◇ A
+A5 : ∀ {l} {A : Set l} → ◇ A → □ ◇ A
 A5 p = □-ax p
 
 -- Usual combinators.
