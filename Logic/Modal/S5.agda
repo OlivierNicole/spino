@@ -17,11 +17,6 @@ infixr 3 ◇_
 ◇_ : ∀ {l} → Set l → Set l
 ◇ p = ¬ □ ¬ p
 
--- Test.
-
-x : □ ⊤
-x = □-ax ⊤.tt
-
 -- Axioms.
 
 -- K (distribution).
