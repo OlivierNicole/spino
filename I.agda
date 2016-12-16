@@ -1,42 +1,44 @@
 -- Etiko, Parto I.
+module I where
 
-open import Logic.Modal.S5
-open import Data.Product using ( _,_ )
+import Logic.Modal.S5
 
---
--- Bazaj predikatoj.
---
+-- Aksiomoj.
+record Aksiomoj₁ : Set₁ where
+  field
+    -- Ekzistas aro de eblaj mondoj.
+    W : Set
+    -- Ekzistas aro de ĉiuj aĵo, pri kio temas en la Etiko.
+    Ω : Set
 
-unuloka-pred : Set₁
-unuloka-pred = {A : Set}(x : A) → Set
+  open Logic.Modal.S5 W public
 
--- atr x : x estas atributo
-data atr : unuloka-pred where
-  atr-ax : {A : Set}(x : A) → atr x
+  field
+    -- Primitivaj predikatoj.
+    -- x ⊢ y : x kaŭzas y.
+    _⊢_ : Ω → Ω → Prop
+    -- x ≤ y : y randas x.
+    _≤_ : Ω → Ω → Prop
+    -- x ⊆ y : x estas en y.
+    _⊆_ : Ω → Ω → Prop
 
--- lib x : x estas libera
-data lib : unuloka-pred where
-  lib-ax : {A : Set}(x : A) → lib x
+    -- 1D1 estas, fakte, aksiomo.
+    1D1 : {x : Ω} →
+      [ x ⊢ x ∧ ¬ m∃ (λ y → y ≢₁ x ∧ x ⊢ y) ⇔ □ m∃ (λ y → y ≡₁ x) ]
 
--- dez x : x estas (instanco de) deziro
-data dez : unuloka-pred where
-  dez-ax : {A : Set}(x : A) → dez x
+postulate aksiomoj₁ : Aksiomoj₁
+open Aksiomoj₁ aksiomoj₁
 
--- eterna x : x estas eterna
-data eterna : unuloka-pred where
-  eterna-ax : {A : Set}(x : A) → eterna x
+-- 1A4
+-- 1A4 estas, fakte, difino, kaj diras ke _⊢_ ≡ _konc_
+_konc_ : Ω → Ω → Prop
+_konc_ = _⊢_
 
-duloka-pred : Set₁
-duloka-pred = {A : Set}(x y : A) → Set
+-- 1D3
+subst : Ω → Prop
+subst x = x ⊆ x ∧ x konc x
 
--- x ⊆ y : x estas en y
-data _⊆_ : duloka-pred where
-  ⊆-ax : {A : Set}(x y : A) → x ⊆ y
-
--- x ≤ y : x konceptiĝas per y
-data _≤_ : duloka-pred where
-  ≤-ax : {A : Set}(x y : A) → x ≤ y
-
--- x ⊢ y : x kaŭzas y
-data _⊢_ : duloka-pred where
-  ⊢-ax : {A : Set}(x y : A) → x ⊢ y
+-- 1D2
+-- 1D2, fakte, difinas finieco en sia ĝenro.
+--finia : Ω → Prop
+--finia x = [ m∃ (λ y → (y ≢₁ x ∧ x ≤ y) ∧ m∀ (λ z → )) ]
