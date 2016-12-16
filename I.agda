@@ -30,15 +30,45 @@ postulate aksiomoj₁ : Aksiomoj₁
 open Aksiomoj₁ aksiomoj₁
 
 -- 1A4
--- 1A4 estas, fakte, difino, kaj diras ke _⊢_ ≡ _konc_
-_konc_ : Ω → Ω → Prop
-_konc_ = _⊢_
+-- 1A4 estas, fakte, difino, kaj diras ke x ⊢ y ≡ y konc-per x
+_konc-per_ : Ω → Ω → Prop
+x konc-per y = y ⊢ x
 
 -- 1D3
 subst : Ω → Prop
-subst x = x ⊆ x ∧ x konc x
+subst x = x ⊆ x ∧ x konc-per x
+
+-- 1D4a
+atr : Ω → Prop
+atr x = m∃ (λ y → subst y ∧ x ⊆ y ∧ x konc-per y ∧ y ⊆ x ∧ y konc-per x)
+
+-- 1D4b
+_atr-of_ : Ω → Ω → Prop
+x atr-of y = atr x ∧ y konc-per x
 
 -- 1D2
--- 1D2, fakte, difinas finieco en sia ĝenro.
---finia : Ω → Prop
---finia x = [ m∃ (λ y → (y ≢₁ x ∧ x ≤ y) ∧ m∀ (λ z → )) ]
+finia : Ω → Prop
+finia x = m∃ (λ y → y ≢₁ x ∧ x ≤ y ∧ m∀ (λ z → (z atr-of x) ⇔ (z atr-of y)))
+
+-- 1D5a
+_moduso-de_ : Ω → Ω → Prop
+x moduso-de y = x ≢₁ y ∧ x ⊆ y ∧ x konc-per y
+
+-- 1D5b
+moduso : Ω → Prop
+moduso x = m∃ (λ y → subst y ∧ x moduso-de y)
+
+-- 1D6
+deo : Ω → Prop
+deo x = subst x ∧ m∀ λ y → atr y ⇒ y atr-of x
+
+-- 1D7
+lib : Ω → Prop
+lib x = x ⊢ x ∧ ¬ m∃ λ y → y ≢₁ x ∧ y ⊢ x
+
+nec : Ω → Prop
+nec x = m∃ λ y → y ≢₁ x ∧ y ⊢ x
+
+-- 1D8
+eterna : Ω → Prop
+eterna x = □ m∃ λ y → y ≡₁ x

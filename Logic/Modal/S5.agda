@@ -61,11 +61,17 @@ infixr 30 ◇_
 ⇒→ : ∀ {A B : Prop} → [ A ⇒ B ] → [ A ] → [ B ]
 ⇒→ A⇒B A w = A⇒B w (A w)
 
-K : ∀ {A B : Prop} → [ □ (A ⇒ B) ] → [ □ A ] → [ □ B ]
-K □A⇒B □A w w' x = □A⇒B w w' x (□A w w' x)
+→⇒ : ∀ {A B : Prop} → [ A ] → [ B ] → [ A ⇒ B ]
+→⇒ A B w Aw = B w
 
-K' : ∀ {A B : Prop} → [ □ (A ⇒ B) ⇒ (□ A ⇒ □ B) ]
-K' w □A⇒Bw □Aw w' wRw' = □A⇒Bw w' wRw' (□Aw w' wRw')
+K' : ∀ {A B : Prop} → [ □ (A ⇒ B) ] → [ □ A ] → [ □ B ]
+K' □A⇒B □A w w' x = □A⇒B w w' x (□A w w' x)
+
+K : ∀ {A B : Prop} → [ □ (A ⇒ B) ⇒ (□ A ⇒ □ B) ]
+K w □A⇒Bw □Aw w' wRw' = □A⇒Bw w' wRw' (□Aw w' wRw')
+
+typ : ∀ (A B : Prop) → Set₁
+typ A B = □ (A ⇒ B) ⇒ (□ A ⇒ □ B)
 
 T : ∀ {A} → [ □ A ⇒ A ]
 T w z = z w refl
