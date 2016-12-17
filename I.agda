@@ -3,6 +3,7 @@ module I where
 
 import Logic.Modal.S5
 open import Data.Product
+open import Data.Sum
 open import Relation.Binary using (IsEquivalence)
 open import Relation.Binary.PropositionalEquality using (_≡_ ; _≢_)
 
@@ -44,7 +45,7 @@ postulate primitivoj : Primitivoj
 open Primitivoj primitivoj
 
 -- 1A4
--- 1A4 estas, fakte, difino, kaj diras ke x ⊢ y ≡ y konc-per x
+-- 1A4 estas, fakte, difino, kaj diras ke x ⊢ y ≡ y konc-per x.
 _konc-per_ : Ω → Ω → Prop
 x konc-per y = y ⊢ x
 
@@ -123,15 +124,39 @@ open Aksiomoj aksiomoj
   x⊆y = proj₂ (proj₁ xmy)
   y⊆y = proj₁ substy
 
+≡-sym : ∀ {l}{A : Set l}(x y : A) → x ≡ y → y ≡ x
+≡-sym x .x (_≡_.refl) = _≡_.refl
+
+≢-sym : ∀ {l}{A : Set l}(x y : A) → x ≢ y → y ≢ x
+≢-sym x y x≢y y≡x = x≢y (≡-sym y x y≡x)
+
 1P2 : {x y : Ω} → [ subst x ∧ subst y ∧ y ≢₁ x
   ⇒ ¬ (∃₁[ z ∈ Ω ] z kom-al x kaj y) ]
-1P2 {x} {y} w ((substx , substy) , y≢x) ∃z =
+1P2 {x} {y} w ((substx , substy) , y≢x) =
   let
     x-kp-x = proj₂ substx
     y-kp-y = proj₂ substy
     ¬x-kp-≢ = proj₂ (1A2 w x) x-kp-x
     ¬y-kp-≢ = proj₂ (1A2 w y) y-kp-y
     ¬x-kp-y x-kp-y = ¬x-kp-≢ (y , (y≢x , x-kp-y))
-    ¬y-kp-x y-kp-x = ¬y-kp-≢ (x , (? , y-kp-x))
+    ¬y-kp-x y-kp-x = ¬y-kp-≢ (x , (≢-sym y x y≢x , y-kp-x))
   in
-  ?
+  proj₂ (1A5 w x y) (¬x-kp-y , ¬y-kp-x)
+
+1P3 : {x y : Ω} → [ ¬ (∃₁[ z ∈ Ω ] z kom-al x kaj y) ⇒ ¬ (y ⊢ x) ∧ ¬ (x ⊢ y) ]
+1P3 {x} {y} w = proj₁ (1A5 w x y)
+
+1P4 : {x y : Ω} → [
+    (x ≢₁ y)
+  ⇒ (∃₁[ z ∈ Ω ] ∃₁[ z' ∈ Ω ]
+      (z atr-of x ∧ z' atr-of y ∧ z ≢₁ z')
+    ∨ (z atr-of x ∧ z ≡₁ x ∧ moduso y)
+    ∨ (z' atr-of y ∧ z' ≡₁ y ∧ moduso x)
+    ∨ (moduso x ∧ moduso y)
+    )
+  ]
+1P4 {x} {y} w x≢y with 1A1 w x | 1A1 w y
+... | (inj₁ x⊆x) | (inj₁ y⊆y) = ?
+... | (inj₁ x⊆x) | (inj₂ (β , (β≢y , y-kp-β))) = ?
+... | (inj₂ (α , (α≢x , x-kp-α))) | (inj₁ y⊆y) = ?
+... | (inj₂ (α , (α≢x , x-kp-α))) | (inj₂ (β , (β≢y , y-kp-β))) = ?
