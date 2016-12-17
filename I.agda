@@ -37,7 +37,7 @@ record Primitivoj : Set₁ where
 
     -- 1D1 estas, fakte, aksiomo.
     1D1 : [ ∀₁[ x ∈ Ω ]
-        (x ⊢ x ∧ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊢ y))
+        (x ⊢ x ∧ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ y ⊢ x))
       ⇔ (□ (∃₁[ y ∈ Ω ] y ≡₁ x))
       ]
 
@@ -114,6 +114,10 @@ record Aksiomoj : Set₁ where
         (◇ ¬ (∃₁[ y ∈ Ω ] y ≡₁ x))
       ⇔ (¬ □ (∃₁[ y ∈ Ω ] y ≡₁ x))
       ]
+    --
+    -- Pliaj aksiomoj (forigitaj de Spinoza, sed necesaj).
+    1A8 : {x y : Ω} → [ x ⊆ y ⇒ x konc-per y ]
+    1A9 : {x : Ω} → [ ∃₁[ y ∈ Ω ] y atr-of x ]
 
 postulate aksiomoj : Aksiomoj
 open Aksiomoj aksiomoj
@@ -148,15 +152,18 @@ open Aksiomoj aksiomoj
 
 1P4 : {x y : Ω} → [
     (x ≢₁ y)
-  ⇒ (∃₁[ z ∈ Ω ] ∃₁[ z' ∈ Ω ]
-      (z atr-of x ∧ z' atr-of y ∧ z ≢₁ z')
-    ∨ (z atr-of x ∧ z ≡₁ x ∧ moduso y)
-    ∨ (z' atr-of y ∧ z' ≡₁ y ∧ moduso x)
+  ⇒ (∃₁[ z ∈ Ω ] ∃₁[ z' ∈ Ω ] z atr-of x ∧ z' atr-of y ∧ z ≢₁ z')
+    ∨ (∃₁[ z ∈ Ω ] z atr-of x ∧ z ≡₁ x ∧ moduso y)
+    ∨ (∃₁[ z' ∈ Ω ] z' atr-of y ∧ z' ≡₁ y ∧ moduso x)
     ∨ (moduso x ∧ moduso y)
-    )
   ]
 1P4 {x} {y} w x≢y with 1A1 w x | 1A1 w y
-... | (inj₁ x⊆x) | (inj₁ y⊆y) = ?
+... | (inj₁ x⊆x) | (inj₁ y⊆y) =
+  let
+    (z , (atr-z , x-kp-z)) = 1A9 w
+    (z' , (atr-z' , y-kp-z')) = 1A9 w
+  in
+  ?
 ... | (inj₁ x⊆x) | (inj₂ (β , (β≢y , y-kp-β))) = ?
 ... | (inj₂ (α , (α≢x , x-kp-α))) | (inj₁ y⊆y) = ?
 ... | (inj₂ (α , (α≢x , x-kp-α))) | (inj₂ (β , (β≢y , y-kp-β))) = ?
