@@ -11,10 +11,11 @@ open import Relation.Binary.PropositionalEquality
 Prop : Set1
 Prop = (w : W) → Set
 
-data _R_ : W → W → Set where
-  refl : ∀ {w} → w R w
-  sym : ∀ {w w'} → w R w' → w' R w
-  trans : ∀ {w w' w''} → w R w' → w' R w'' → w R w''
+private
+  data _R_ : W → W → Set where
+    refl : ∀ {w} → w R w
+    sym : ∀ {w w'} → w R w' → w' R w
+    trans : ∀ {w w' w''} → w R w' → w' R w'' → w R w''
 
 infixr 30 ¬_
 ¬_ : Prop → Prop
@@ -32,15 +33,27 @@ infixl 5 _⇒_
 _⇒_ : Prop → Prop → Prop
 (P ⇒ Q) w = P w → Q w
 
-m∀ : {A : Set} → (A → Prop) → Prop
-(m∀ P) w = ∀ x → P x w
+m∀ : (A : Set) → (A → Prop) → Prop
+m∀ A P w = (x : A) → P x w
 
-m∃ : {A : Set} → (A → Prop) → Prop
-(m∃ P) w = ∃ λ x → P x w
+infix 2 ∀₁-syntax
+∀₁-syntax : (A : Set) → (A → Prop) → Prop
+∀₁-syntax = m∀
+
+syntax ∀₁-syntax A (λ x → P) = ∀₁[ x ∈ A ] P
+
+m∃ : (A : Set) → (A → Prop) → Prop
+m∃ _ P w = ∃ λ x → P x w
+
+infix 2 ∃₁-syntax
+∃₁-syntax : (A : Set) → (A → Prop) → Prop
+∃₁-syntax = m∃
+
+syntax ∃₁-syntax A (λ x → P) = ∃₁[ x ∈ A ] P
 
 infixr 30 □_
 □_ : Prop → Prop
-(□ P) w = ∀ w' → w R w' → P w'
+(□ P) w = (w' : W)(wRw' : w R w') → P w'
 
 infixr 30 ◇_
 ◇_ : Prop → Prop
@@ -61,17 +74,11 @@ infixr 30 ◇_
 ⇒→ : ∀ {A B : Prop} → [ A ⇒ B ] → [ A ] → [ B ]
 ⇒→ A⇒B A w = A⇒B w (A w)
 
-→⇒ : ∀ {A B : Prop} → [ A ] → [ B ] → [ A ⇒ B ]
-→⇒ A B w Aw = B w
-
 K' : ∀ {A B : Prop} → [ □ (A ⇒ B) ] → [ □ A ] → [ □ B ]
 K' □A⇒B □A w w' x = □A⇒B w w' x (□A w w' x)
 
 K : ∀ {A B : Prop} → [ □ (A ⇒ B) ⇒ (□ A ⇒ □ B) ]
 K w □A⇒Bw □Aw w' wRw' = □A⇒Bw w' wRw' (□Aw w' wRw')
-
-typ : ∀ (A B : Prop) → Set₁
-typ A B = □ (A ⇒ B) ⇒ (□ A ⇒ □ B)
 
 T : ∀ {A} → [ □ A ⇒ A ]
 T w z = z w refl
@@ -89,14 +96,15 @@ A5 : ∀ {A} → [ ◇ A ⇒ □ ◇ A ]
 A5 w ◇Aw w' wRw' with ◇Aw
 A5 w ◇Aw w' wRw' | w'' , wRw'' , Aw'' = w'' , trans (sym wRw') wRw'' , Aw''
 
-foo : ∀ {A} → [ ◇ A ⇒ ¬ □ ¬ A ]
-foo w ◇Aw □¬Aw with ◇Aw
-foo w ◇Aw □¬Aw | w' , wRw' , Aw' = □¬Aw w' wRw' Aw'
+◇⇒¬□¬ : ∀ {A} → [ ◇ A ⇒ ¬ □ ¬ A ]
+◇⇒¬□¬ w ◇Aw □¬Aw with ◇Aw
+◇⇒¬□¬ w ◇Aw □¬Aw | w' , wRw' , Aw' = □¬Aw w' wRw' Aw'
 
-bar : ∀ {A} → [ ¬ □ ¬ A ⇒ ¬ ¬ ◇ A ]
-bar w ¬□¬Aw ¬◇Aw = ¬□¬Aw (λ w' wRw' Aw' → ¬◇Aw (w' , wRw' , Aw'))
+¬□¬⇒¬¬◇ : ∀ {A} → [ ¬ □ ¬ A ⇒ ¬ ¬ ◇ A ]
+¬□¬⇒¬¬◇ w ¬□¬Aw ¬◇Aw = ¬□¬Aw (λ w' wRw' Aw' → ¬◇Aw (w' , wRw' , Aw'))
 
 -- Equivalence
+infixl 5 _⇔_
 _⇔_ : Prop → Prop → Prop
 P ⇔ Q = (P ⇒ Q) ∧ (Q ⇒ P)
 
