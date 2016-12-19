@@ -29,7 +29,7 @@ infixl 10 _∨_
 _∨_ : Prop → Prop → Prop
 (P ∨ Q) w = P w ⊎ Q w
 
-infixl 5 _⇒_
+infixr 5 _⇒_
 _⇒_ : Prop → Prop → Prop
 (P ⇒ Q) w = P w → Q w
 
@@ -114,3 +114,11 @@ x ≡₁ y = [[ x ≡₀ y ]]
 
 _≢₁_ : {A : Set} → A → A → Prop
 x ≢₁ y = [[ x ≢₀ y ]]
+
+--th : {A : Set}{P : A → Prop} → [ ¬ ¬ (∀₁[ x ∈ A ] ¬ ¬ (P x)) ⇔ (∀₁[ x ∈ A ] ¬ ¬ (P x)) ]
+--th {A}{P} w = ltr , rtl
+--  where
+--  ltr : (¬ ¬ (∀₁[ x ∈ A ] ¬ ¬ (P x)) ⇒ (∀₁[ x ∈ A ] ¬ ¬ (P x)) ) w
+--  ltr ¬¬∀¬¬Px x ¬Px = ¬¬∀¬¬Px λ ¬∀¬¬Px → ¬∀¬¬Px x ¬Px
+--  rtl : ((∀₁[ x ∈ A ] ¬ ¬ (P x)) ⇒ ¬ ¬ (∀₁[ x ∈ A ] ¬ ¬ (P x))) w
+--  rtl ∀x¬¬Px ¬∀x¬¬Px = ¬∀x¬¬Px ∀x¬¬Px

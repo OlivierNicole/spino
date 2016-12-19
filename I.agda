@@ -11,7 +11,7 @@ record Primitivoj : Set₁ where
   field
     -- Ekzistas aro de eblaj mondoj.
     W : Set
-    -- Ekzistas aro de ĉiuj aĵo, pri kio temas en la Etiko.
+    -- Ekzistas aro de ĉiuj aĵoj, pri kio temas en la Etiko.
     Ω : Set
 
   open Logic.Modal.S5 W public
@@ -35,14 +35,12 @@ record Primitivoj : Set₁ where
     -- x objekto y : x estas objekto de y.
     _objekto_ : Ω → Ω → Prop
 
-    -- 1D1 estas, fakte, aksiomo.
-    1D1 : [ ∀₁[ x ∈ Ω ]
-        (x ⊢ x ∧ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ y ⊢ x))
-      ⇔ (□ (∃₁[ y ∈ Ω ] y ≡₁ x))
-      ]
-
 postulate primitivoj : Primitivoj
 open Primitivoj primitivoj
+
+-- 1D1 estas, fakte, aksiomo (v. malalte).
+
+-- 1D2 necesas 1D4b (v. malalte).
 
 -- 1A4
 -- 1A4 estas, fakte, difino, kaj diras ke x ⊢ y ≡ y konc-per x.
@@ -91,8 +89,18 @@ eterna x = □ (∃₁[ y ∈ Ω ] y ≡₁ x)
 
 record Aksiomoj : Set₁ where
   field
-    1A1 : [ ∀₁[ x ∈ Ω ]
+    -- 1D1 estas, fakte, aksiomo.
+    1D1 : [ ∀₁[ x ∈ Ω ]
+        (x ⊢ x ∧ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ y ⊢ x))
+      ⇔ (□ (∃₁[ y ∈ Ω ] y ≡₁ x))
+      ]
+    1A1a : [ ∀₁[ x ∈ Ω ]
         x ⊆ x ∨ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊆ y)
+      ]
+    -- "Intuiciista" versio de 1A1 (la du versioj estas ekvivalentaj laŭ
+    -- klasika logiko).
+    1A1c : [ ∀₁[ x ∈ Ω ]
+        ¬ (¬ (x ⊆ x) ∧ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊆ y))
       ]
     1A2 : [ ∀₁[ x ∈ Ω ]
         ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x konc-per y)
@@ -121,6 +129,50 @@ record Aksiomoj : Set₁ where
 
 postulate aksiomoj : Aksiomoj
 open Aksiomoj aksiomoj
+
+--
+-- Helpaj teoremoj
+--
+
+1H1 : {x : Ω} → [ subst x ⇔ x ⊆ x ]
+1H1 w = proj₁ , λ x⊆x → x⊆x , 1A8 w x⊆x
+
+1H2-lem : {P Q : Prop} → [ ¬ (¬ P ∧ ¬ Q) ⇒ ¬ Q ⇒ ¬ ¬ P ]
+1H2-lem w ¬[¬P∧¬Q] ¬Q ¬P = ¬[¬P∧¬Q] (¬P , ¬Q)
+
+1H2 : {x : Ω} → [ x konc-per x ⇒ ¬ ¬ (x ⊆ x) ]
+1H2 {x} w x-kp-x = 1H2-lem w (1A1c w x) ¬∃y-x⊆y
+  where
+  ¬∃y-x⊆y : (¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊆ y)) w
+  ¬∃y-x⊆y (y , (y≢x , x⊆y)) =
+    proj₂ (1A2 w x) x-kp-x (y , (y≢x , 1A8 w x⊆y))
+
+1H3 : {x : Ω} → [ subst x ⇒ atr x ]
+1H3 {x} w s-x = (x , ((((s-x , x⊆x) , x-kp-x) , x⊆x) , x-kp-x))
+  where
+  x⊆x = proj₁ s-x
+  x-kp-x = proj₂ s-x
+
+1H4-lem : {P Q : Prop} → [ (P ⇔ Q) ⇒ ¬ ¬ P ⇒ ¬ ¬ Q ]
+1H4-lem w (P⇒Q , Q⇒P) ¬¬P ¬Q =
+  ¬¬P λ P → ¬Q (P⇒Q P)
+
+1H4 : {x : Ω} → [ ¬ ¬ (subst x) ⇔ ¬ ¬ (x konc-per x) ]
+1H4 {x} w = ltr , rtl
+  where
+  ltr : (¬ ¬ (subst x) ⇒ ¬ ¬ (x konc-per x)) w
+  ltr ¬¬subst-x ¬x-kp-x =
+    ¬¬subst-x λ subst-x → ¬x-kp-x (proj₂ subst-x)
+  rtl : (¬ ¬ (x konc-per x) ⇒ ¬ ¬ (subst x)) w
+  rtl ¬¬x-kp-x =
+    ¬¬x-kp-x ?
+
+--1H5 : {x : Ω} → [ subst x ∨ moduso x ]
+--1H5 w = ?
+
+--
+-- Propozicioj
+--
 
 1P1 : {x y : Ω} → [ x moduso-de y ∧ subst y ⇒ x ⊆ y ∧ y ⊆ y ]
 1P1 _ (xmy , substy) = x⊆y , y⊆y
@@ -157,13 +209,4 @@ open Aksiomoj aksiomoj
     ∨ (∃₁[ z' ∈ Ω ] z' atr-of y ∧ z' ≡₁ y ∧ moduso x)
     ∨ (moduso x ∧ moduso y)
   ]
-1P4 {x} {y} w x≢y with 1A1 w x | 1A1 w y
-... | (inj₁ x⊆x) | (inj₁ y⊆y) =
-  let
-    (z , (atr-z , x-kp-z)) = 1A9 w
-    (z' , (atr-z' , y-kp-z')) = 1A9 w
-  in
-  ?
-... | (inj₁ x⊆x) | (inj₂ (β , (β≢y , y-kp-β))) = ?
-... | (inj₂ (α , (α≢x , x-kp-α))) | (inj₁ y⊆y) = ?
-... | (inj₂ (α , (α≢x , x-kp-α))) | (inj₂ (β , (β≢y , y-kp-β))) = ?
+1P4 = ?
