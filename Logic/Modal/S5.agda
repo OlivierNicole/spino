@@ -22,7 +22,7 @@ infixr 30 ¬_
 ¬_ : Prop → Prop
 (¬ P) w = ¬0 (P w)
 
-infixl 10 _∧_
+infixr 10 _∧_
 _∧_ : Prop → Prop → Prop
 (P ∧ Q) w = P w × Q w
 
@@ -115,10 +115,18 @@ x ≡₁ y = [[ x ≡₀ y ]]
 _≢₁_ : {A : Set} → A → A → Prop
 x ≢₁ y = [[ x ≢₀ y ]]
 
+neg-inj₁ : {P Q : Prop} → [ P ∨ Q ⇒ ¬ P ⇒ Q ]
+neg-inj₁ (inj₁ p) ¬p = ⊥-elim (¬p p)
+neg-inj₁ (inj₂ q) _ = q
+
+neg-inj₂ : {P Q : Prop} → [ P ∨ Q ⇒ ¬ Q ⇒ P ]
+neg-inj₂ (inj₁ p) _ = p
+neg-inj₂ (inj₂ q) ¬q = ⊥-elim (¬q q)
+
 module Classical where
   postulate lem : (P : Prop) → [ P ∨ ¬ P ]
 
-  dne : (P : Prop) → [ ¬ ¬ P ⇒ P ]
-  dne P ¬¬P with lem P
+  dne : {P : Prop} → [ ¬ ¬ P ⇒ P ]
+  dne {P} ¬¬P with lem P
   ... | (inj₁ Pw) = Pw
   ... | (inj₂ ¬Pw) = ⊥-elim (¬¬P ¬Pw)

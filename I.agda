@@ -5,7 +5,8 @@ import Logic.Modal.S5
 open import Data.Product
 open import Data.Sum
 open import Relation.Binary using (IsEquivalence)
-open import Relation.Binary.PropositionalEquality using (_≡_ ; _≢_)
+open import Relation.Binary.PropositionalEquality using (_≡_ ; _≢_ ; refl)
+open import Function
 
 record Primitivoj : Set₁ where
   field
@@ -94,13 +95,8 @@ record Aksiomoj : Set₁ where
         (x ⊢ x ∧ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ y ⊢ x))
       ⇔ (□ (∃₁[ y ∈ Ω ] y ≡₁ x))
       ]
-    1A1a : [ ∀₁[ x ∈ Ω ]
+    1A1 : [ ∀₁[ x ∈ Ω ]
         x ⊆ x ∨ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊆ y)
-      ]
-    -- "Intuiciista" versio de 1A1 (la du versioj estas ekvivalentaj laŭ
-    -- klasika logiko).
-    1A1c : [ ∀₁[ x ∈ Ω ]
-        ¬ (¬ (x ⊆ x) ∧ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊆ y))
       ]
     1A2 : [ ∀₁[ x ∈ Ω ]
         ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x konc-per y)
@@ -126,87 +122,167 @@ record Aksiomoj : Set₁ where
     -- Pliaj aksiomoj (forigitaj de Spinoza, sed necesaj).
     1A8 : {x y : Ω} → [ x ⊆ y ⇒ x konc-per y ]
     1A9 : {x : Ω} → [ ∃₁[ y ∈ Ω ] y atr-of x ]
+    1A11 : {x y : Ω} → [ subst x ⇒ x ≤ y ⇒ subst y ]
+    1A12 : {x : Ω} → [ (∃₁[ y ∈ Ω ] x moduso-de y) ⇒ moduso x ]
 
 postulate aksiomoj : Aksiomoj
 open Aksiomoj aksiomoj
+
+open Classical
+
+--
+-- Agda helpaĵoj
+--
+
+infixl 0 _⦊_
+_⦊_ : ∀ {a b} {A : Set a} {B : A → Set b} →
+  (x : A) → ((x : A) → B x) → B x
+x ⦊ f = f x
+
+≡-sym : ∀ {l} {A : Set l} {x y : A} → x ≡ y → y ≡ x
+≡-sym refl = refl
+
+≡-trans : ∀ {l} {A : Set l} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+≡-trans refl refl = refl
+
+≢-sym : ∀ {l} {A : Set l} {x y : A} → x ≢ y → y ≢ x
+≢-sym x≢y y≡x = x≢y (≡-sym y≡x)
 
 --
 -- Helpaj teoremoj
 --
 
 1H1 : {x : Ω} → [ subst x ⇔ x ⊆ x ]
-1H1 w = proj₁ , λ x⊆x → x⊆x , 1A8 w x⊆x
+1H1 = proj₁ , λ x⊆x → x⊆x , 1A8 x⊆x
 
-1H2-lem : {P Q : Prop} → [ ¬ (¬ P ∧ ¬ Q) ⇒ ¬ Q ⇒ ¬ ¬ P ]
-1H2-lem w ¬[¬P∧¬Q] ¬Q ¬P = ¬[¬P∧¬Q] (¬P , ¬Q)
-
-1H2 : {x : Ω} → [ x konc-per x ⇒ ¬ ¬ (x ⊆ x) ]
-1H2 {x} w x-kp-x = 1H2-lem w (1A1c w x) ¬∃y-x⊆y
-  where
-  ¬∃y-x⊆y : (¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊆ y)) w
-  ¬∃y-x⊆y (y , (y≢x , x⊆y)) =
-    proj₂ (1A2 w x) x-kp-x (y , (y≢x , 1A8 w x⊆y))
+1H2 : {x : Ω} → [ x konc-per x ⇒ x ⊆ x ]
+1H2 {x} x-kp-x =
+  let ¬∃y = proj₂ (1A2 x) x-kp-x in
+  neg-inj₂
+    {P = x ⊆ x}
+    {Q = ∃₁[ y ∈ Ω ] y ≢₁ x ∧ x ⊆ y}
+    (1A1 x) λ
+    { (y , (y≢x , x⊆y)) → ¬∃y (y , (y≢x , (1A8 x⊆y)))
+    }
 
 1H3 : {x : Ω} → [ subst x ⇒ atr x ]
-1H3 {x} w s-x = (x , ((((s-x , x⊆x) , x-kp-x) , x⊆x) , x-kp-x))
+1H3 {x} s-x = (x , s-x , x⊆x , x-kp-x , x⊆x , x-kp-x)
   where
   x⊆x = proj₁ s-x
   x-kp-x = proj₂ s-x
 
 1H4-lem : {P Q : Prop} → [ (P ⇔ Q) ⇒ ¬ ¬ P ⇒ ¬ ¬ Q ]
-1H4-lem w (P⇒Q , Q⇒P) ¬¬P ¬Q =
+1H4-lem (P⇒Q , Q⇒P) ¬¬P ¬Q =
   ¬¬P λ P → ¬Q (P⇒Q P)
 
-1H4 : {x : Ω} → [ ¬ ¬ (subst x) ⇔ ¬ ¬ (x konc-per x) ]
-1H4 {x} w = ltr , rtl
+1H4 : {x : Ω} → [ subst x ⇔ x konc-per x ]
+1H4 {x} {w = w} = ltr , rtl
   where
-  ltr : (¬ ¬ (subst x) ⇒ ¬ ¬ (x konc-per x)) w
-  ltr ¬¬subst-x ¬x-kp-x =
-    ¬¬subst-x λ subst-x → ¬x-kp-x (proj₂ subst-x)
-  rtl : (¬ ¬ (x konc-per x) ⇒ ¬ ¬ (subst x)) w
-  rtl ¬¬x-kp-x =
-    ¬¬x-kp-x ?
+  ltr : (subst x ⇒ x konc-per x) w
+  ltr = proj₂
+  rtl : (x konc-per x ⇒ subst x) w
+  rtl x-kp-x =
+    1H2 x-kp-x , x-kp-x
 
---1H5 : {x : Ω} → [ subst x ∨ moduso x ]
---1H5 w = ?
+1H5 : {x : Ω} → [ subst x ∨ moduso x ]
+1H5 {x} {w} with 1A1 x
+... | (inj₁ x⊆x) = x⊆x , 1A8 x⊆x ⦊ inj₁
+... | (inj₂ (y , y≢x , x⊆y)) =
+  y , ≢-sym y≢x , x⊆y , 1A8 x⊆y ⦊ 1A12 ⦊ inj₂
+
+1H6 : {x : Ω} → [ ¬ (subst x ∧ moduso x) ]
+1H6 {x} ((_ , x-kp-x) , (y , _ , x≢y , _ , x-kp-y)) =
+  y , ≢-sym x≢y , x-kp-y ⦊ proj₂ (1A2 x) x-kp-x
+
+1H7 : {x y : Ω} → [ x atr-of y ∧ subst y ⇒ x ≡₁ y ]
+1H7 {x} {y} {w} ((atr-x , y-kp-x) , (_ , y-kp-y)) =
+  dne {w = w} λ x≢y → x , x≢y , y-kp-x ⦊ proj₂ (1A2 y) y-kp-y
 
 --
 -- Propozicioj
 --
 
 1P1 : {x y : Ω} → [ x moduso-de y ∧ subst y ⇒ x ⊆ y ∧ y ⊆ y ]
-1P1 _ (xmy , substy) = x⊆y , y⊆y
+1P1 (xmy , substy) = x⊆y , y⊆y
   where
-  x⊆y = proj₂ (proj₁ xmy)
+  x⊆y = proj₁ (proj₂ xmy)
   y⊆y = proj₁ substy
 
-≡-sym : ∀ {l}{A : Set l}(x y : A) → x ≡ y → y ≡ x
-≡-sym x .x (_≡_.refl) = _≡_.refl
-
-≢-sym : ∀ {l}{A : Set l}(x y : A) → x ≢ y → y ≢ x
-≢-sym x y x≢y y≡x = x≢y (≡-sym y x y≡x)
-
-1P2 : {x y : Ω} → [ subst x ∧ subst y ∧ y ≢₁ x
+1P2 : {x y : Ω} → [ subst x ∧ subst y ∧ x ≢₁ y
   ⇒ ¬ (∃₁[ z ∈ Ω ] z kom-al x kaj y) ]
-1P2 {x} {y} w ((substx , substy) , y≢x) =
+1P2 {x} {y} (substx , substy , x≢y) =
   let
     x-kp-x = proj₂ substx
     y-kp-y = proj₂ substy
-    ¬x-kp-≢ = proj₂ (1A2 w x) x-kp-x
-    ¬y-kp-≢ = proj₂ (1A2 w y) y-kp-y
-    ¬x-kp-y x-kp-y = ¬x-kp-≢ (y , (y≢x , x-kp-y))
-    ¬y-kp-x y-kp-x = ¬y-kp-≢ (x , (≢-sym y x y≢x , y-kp-x))
+    ¬x-kp-≢ = proj₂ (1A2 x) x-kp-x
+    ¬y-kp-≢ = proj₂ (1A2 y) y-kp-y
+    ¬x-kp-y x-kp-y = ¬x-kp-≢ (y , (≢-sym x≢y , x-kp-y))
+    ¬y-kp-x y-kp-x = ¬y-kp-≢ (x , (x≢y , y-kp-x))
   in
-  proj₂ (1A5 w x y) (¬x-kp-y , ¬y-kp-x)
+  proj₂ (1A5 x y) (¬x-kp-y , ¬y-kp-x)
 
-1P3 : {x y : Ω} → [ ¬ (∃₁[ z ∈ Ω ] z kom-al x kaj y) ⇒ ¬ (y ⊢ x) ∧ ¬ (x ⊢ y) ]
-1P3 {x} {y} w = proj₁ (1A5 w x y)
+1P3 : {x y : Ω} → [ ¬ (∃₁[ z ∈ Ω ] z kom-al x kaj y) ⇒ ¬ (x ⊢ y) ∧ ¬ (y ⊢ x) ]
+1P3 {x} {y} prel = prel ⦊ proj₁ (1A5 x y) ⦊ λ
+  { (¬x-kp-y , ¬y-kp-x) → ¬y-kp-x , ¬x-kp-y
+  }
 
 1P4 : {x y : Ω} → [
-    (x ≢₁ y)
-  ⇒ (∃₁[ z ∈ Ω ] ∃₁[ z' ∈ Ω ] z atr-of x ∧ z' atr-of y ∧ z ≢₁ z')
-    ∨ (∃₁[ z ∈ Ω ] z atr-of x ∧ z ≡₁ x ∧ moduso y)
-    ∨ (∃₁[ z' ∈ Ω ] z' atr-of y ∧ z' ≡₁ y ∧ moduso x)
+    (x ≢₁ y) ⇒ (∃₁[ z ∈ Ω ] ∃₁[ z' ∈ Ω ]
+      (z atr-of x ∧ z' atr-of y ∧ z ≢₁ z')
+    ∨ (z atr-of x ∧ z ≡₁ x ∧ moduso y)
+    ∨ (z' atr-of y ∧ z' ≡₁ y ∧ moduso x)
     ∨ (moduso x ∧ moduso y)
+    )
   ]
-1P4 = ?
+1P4 {x} {y} {w} x≢y with 1A9 {x} | 1A9 {y}
+... | (z , z-atr-x) | (z' , z'-atr-y) =
+  (z , z' , 1P4')
+  where
+  1P4' : (
+      (z atr-of x ∧ z' atr-of y ∧ z ≢₁ z')
+    ∨ (z atr-of x ∧ z ≡₁ x ∧ moduso y)
+    ∨ (z' atr-of y ∧ z' ≡₁ y ∧ moduso x)
+    ∨ (moduso x ∧ moduso y)
+    ) w
+  1P4' with 1H5 {x} | 1H5 {y}
+  ... | inj₁ s-x | inj₁ s-y =
+    z-atr-x , z'-atr-y , z≢z' ⦊ inj₁ ⦊ inj₁ ⦊ inj₁
+    where
+    z≢z' : z ≢ z'
+    z≢z' = λ z≡z' →
+      let
+        z≡x = 1H7 {z} {x} (z-atr-x , s-x)
+        z'≡y = 1H7 {z'} {y} (z'-atr-y , s-y)
+      in
+      x≢y (≡-trans (≡-trans (≡-sym z≡x) z≡z') z'≡y)
+  ... | inj₁ s-x | inj₂ m-y =
+    z-atr-x , 1H7 {z} {x} (z-atr-x , s-x) , m-y ⦊ inj₂ ⦊ inj₁ ⦊ inj₁
+  ... | inj₂ m-x | inj₁ s-y =
+    z'-atr-y , 1H7 {z'} {y} (z'-atr-y , s-y) , m-x ⦊ inj₂ ⦊ inj₁
+  ... | inj₂ m-x | inj₂ m-y =
+    m-x , m-y ⦊ inj₂
+
+1P5 : {x y : Ω} → [ subst x ∧ subst y ∧ x ≢₁ y
+  ⇒ ¬ (∃₁[ w ∈ Ω ] w atr-of x ∧ w atr-of y) ]
+1P5 (s-x , s-y , x≢y) (w , w-atr-x , w-atr-y) =
+  ≡-trans
+    (≡-sym (1H7 (w-atr-x , s-x)))
+    (1H7 (w-atr-y , s-y))
+  ⦊ x≢y
+
+1P6 : {x y : Ω} → [ subst x ∧ subst y ∧ x ≢₁ y ⇒ ¬ (x ⊢ y) ∧ ¬ (y ⊢ x) ]
+1P6 prel = 1P2 prel ⦊ 1P3
+
+-- En 1P6c mi uzas 1D3, 1A4 (kiel difino) kaj 1A2. Spinoza nur citas 1D3 kaj
+-- 1A4.
+1P6c : {x : Ω} → [ subst x ⇒ ¬ (∃₁[ y ∈ Ω ] y ≢₁ x ∧ y ⊢ x) ]
+1P6c {x} s-x = proj₂ s-x ⦊ proj₂ (1A2 x)
+
+1P7 : {x : Ω} → [ subst x ⇒ □ (∃₁[ y ∈ Ω ] y ≡₁ x) ]
+1P7 {x} s-x = proj₂ s-x , 1P6c s-x ⦊ proj₁ (1D1 x)
+
+1P8 : {x : Ω} → [ subst x ⇒ ¬ (finia x) ]
+1P8 {x} s-x (y , y≢x , x≤y , same-atr) with 1A9 {x}
+... | (a , a-atr-x) =
+  1P5 (s-x , 1A11 s-x x≤y , ≢-sym y≢x)
+    (a , a-atr-x , proj₁ (same-atr a) a-atr-x)
