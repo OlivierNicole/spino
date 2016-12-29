@@ -130,3 +130,7 @@ module Classical where
   dne {P} ¬¬P with lem P
   ... | (inj₁ Pw) = Pw
   ... | (inj₂ ¬Pw) = ⊥-elim (¬¬P ¬Pw)
+
+◇□ : {P : Prop} → [ ◇ P ⇒ □ (P ⇒ □ P) ⇒ □ P ]
+◇□ {P} {w = w} ◇P □[P⇒□P] =
+  ?

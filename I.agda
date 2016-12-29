@@ -122,6 +122,7 @@ record Aksiomoj : Set₁ where
     -- Pliaj aksiomoj (forigitaj de Spinoza, sed necesaj).
     1A8 : {x y : Ω} → [ x ⊆ y ⇒ x konc-per y ]
     1A9 : {x : Ω} → [ ∃₁[ y ∈ Ω ] y atr-of x ]
+    1A10 : [ ◇ (∃₁[ x ∈ Ω ] deo x) ]
     1A11 : {x y : Ω} → [ subst x ⇒ x ≤ y ⇒ subst y ]
     1A12 : {x : Ω} → [ (∃₁[ y ∈ Ω ] x moduso-de y) ⇒ moduso x ]
 
@@ -144,6 +145,9 @@ x ⦊ f = f x
 
 ≡-trans : ∀ {l} {A : Set l} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
 ≡-trans refl refl = refl
+
+≡-subst : ∀ {l l'} {A : Set l} {x y : A} → {P : A → Set l'} → x ≡ y → P x → P y
+≡-subst refl Px = Px
 
 ≢-sym : ∀ {l} {A : Set l} {x y : A} → x ≢ y → y ≢ x
 ≢-sym x≢y y≡x = x≢y (≡-sym y≡x)
@@ -286,3 +290,17 @@ x ⦊ f = f x
 ... | (a , a-atr-x) =
   1P5 (s-x , 1A11 s-x x≤y , ≢-sym y≢x)
     (a , a-atr-x , proj₁ (same-atr a) a-atr-x)
+
+-- 1P9 : ne nun
+
+1P10 : {x : Ω} → [ atr x ⇒ x konc-per x ]
+1P10 {x} {w = w} (y , (_ , y-kp-y) , x⊆y , x-kp-y , y⊆x , y-kp-x) =
+  ≡-subst y≡x y-kp-y
+  where
+  y≡x : y ≡ x
+  y≡x = dne {w = w} λ y≢x →
+    x , ≢-sym y≢x , y-kp-x ⦊ proj₂ (1A2 y) y-kp-y
+
+1P11 : [ □ (∃₁[ x ∈ Ω ] deo x) ]
+1P11 with 1A10
+... | (
