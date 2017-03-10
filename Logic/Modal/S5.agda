@@ -103,6 +103,14 @@ A5 ◇Aw w' wRw' with ◇Aw
 ¬□¬⇒¬¬◇ : ∀ {A} → [ ¬ □ ¬ A ⇒ ¬ ¬ ◇ A ]
 ¬□¬⇒¬¬◇ ¬□¬Aw ¬◇Aw = ¬□¬Aw (λ w' wRw' Aw' → ¬◇Aw (w' , wRw' , Aw'))
 
+◇-elim : ∀ {A} → [ ◇ ◇ A ⇒ ◇ A ]
+◇-elim {w = w} (w' , wRw' , w'' , w'Rw'' , Pw'') =
+  w'' , trans wRw' w'Rw'' , Pw''
+
+◇□⇒□ : ∀ {A} → [ ◇ □ A ⇒ □ A ]
+◇□⇒□ {w = w} (w' , wRw' , □Aw') =
+  λ w'' wRw'' → □Aw' w'' (trans (sym wRw') wRw'')
+
 -- Equivalence
 infixl 5 _⇔_
 _⇔_ : Prop → Prop → Prop
@@ -123,6 +131,10 @@ neg-inj₂ : {P Q : Prop} → [ P ∨ Q ⇒ ¬ Q ⇒ P ]
 neg-inj₂ (inj₁ p) _ = p
 neg-inj₂ (inj₂ q) ¬q = ⊥-elim (¬q q)
 
+◇-imply-◇ : {P Q : Prop} → [ ◇ P ⇒ □ (P ⇒ Q) ⇒ ◇ Q ]
+◇-imply-◇ {P} {w = w} (w' , wRw' , Pw') □[P⇒Q] =
+  w' , wRw' , □[P⇒Q] w' wRw' Pw'
+
 module Classical where
   postulate lem : (P : Prop) → [ P ∨ ¬ P ]
 
@@ -130,7 +142,3 @@ module Classical where
   dne {P} ¬¬P with lem P
   ... | (inj₁ Pw) = Pw
   ... | (inj₂ ¬Pw) = ⊥-elim (¬¬P ¬Pw)
-
-◇□ : {P : Prop} → [ ◇ P ⇒ □ (P ⇒ □ P) ⇒ □ P ]
-◇□ {P} {w = w} ◇P □[P⇒□P] =
-  ?
