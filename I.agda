@@ -301,6 +301,18 @@ x ⦊ f = f x
   y≡x = dne {w = w} λ y≢x →
     x , ≢-sym y≢x , y-kp-x ⦊ proj₂ (1A2 y) y-kp-y
 
+1P11-lem₀ : {P : Prop} → [ ◇ P ⇒ □ (P ⇒ □ P) ⇒ □ P ]
+1P11-lem₀ ◇P □[P⇒□P] = ◇-imply-◇ ◇P □[P⇒□P] ⦊ ◇□⇒□
+
+∃deo : Prop
+∃deo = ∃₁[ x ∈ Ω ] deo x
+
+1P11-lem₁ : [ □ (∃deo ⇒ □ ∃deo) ]
+1P11-lem₁ {w} w' wRw' (x , subst-x , all-atr-of-x) w'' w'Rw'' with subst-x
+... | (x⊆x , x-kp-x) = (x , subst-x-w'' , ?)
+  where
+  subst-x-w'' = ?
+
 1P11 : [ □ (∃₁[ x ∈ Ω ] deo x) ]
-1P11 with 1A10
-... | (
+1P11 {w} w'' with 1A10 {w}
+... | (w' , wRw' , Pw') = ?
