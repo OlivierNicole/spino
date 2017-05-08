@@ -291,7 +291,7 @@ x ⦊ f = f x
   1P5 (s-x , 1A11 s-x x≤y , ≢-sym y≢x)
     (a , a-atr-x , proj₁ (same-atr a) a-atr-x)
 
--- 1P9 : ne nun
+-- 1P9 : ne nun (v. malalte)
 
 1P10 : {x : Ω} → [ atr x ⇒ x konc-per x ]
 1P10 {x} {w = w} (y , (_ , y-kp-y) , x⊆y , x-kp-y , y⊆x , y-kp-x) =
