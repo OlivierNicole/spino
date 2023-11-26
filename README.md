@@ -1,0 +1,1 @@
+An attempt to encode the logical structure of Spinoza’s “Ethics” in the proof language Agda. The work is based on Jarrett, [The logical structure of Spinoza's Ethics](https://link.springer.com/article/10.1007/BF00869440), Part I.
